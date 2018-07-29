@@ -66,142 +66,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-CSPopKit - 一个弹窗实现方案" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/" class="article-date">
-  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>To run the example project, clone the repo, and run <code>pod install</code> from the Example directory first.</p>
-<h2 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h2><p>CSPopKit is available through <a href="http://cocoapods.org" target="_blank" rel="noopener">CocoaPods</a>. To install<br>it, simply add the following line to your Podfile:</p>
-<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'CSPopKit'</span></span><br></pre></td></tr></table></figure>
-<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p><strong>CSPopKit是从项目中抽离出的一套弹窗框架，旨在为app内所有的弹窗业务提供一套规范的实现。</strong></p>
-<p>在我司项目中，经过CSPopkit这套方案，重构的弹窗业务已经独立成一个模块，结构如下图<br><img src="https://github.com/joy_yu/CSPopKit/blob/master/README/屏幕快照%202018-04-04%20下午2.03.07.png" alt="Alt text"></p>
-<h4 id="背景："><a href="#背景：" class="headerlink" title="背景："></a>背景：</h4><p>多人维护的项目，针对产品需求需要定制各种弹窗，因为没有一套规范实现，每个人根据自己的代码习惯定制不同风格的弹窗，久而久之，项目内出现了各种各种的弹窗代码，有的是直接定制view，添加到superView上，有的是用controller定制，有的加window上，这些杂乱的代码分散在各处，无法清晰梳理出弹窗相关业务的逻辑，而且由于各种各种的弹窗增多，触发时机不同，有可能会出现界面上出现多个弹窗的case，这时候如果要做弹窗的优先级展示，因没有一个底层去维护这些弹窗逻辑，根本就无力做到弹窗的分级控制，基于这些，对项目中的弹窗进行了全部重构。</p>
-<h4 id="CSPopKit使用："><a href="#CSPopKit使用：" class="headerlink" title="CSPopKit使用："></a>CSPopKit使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//CSPopKit定义的弹窗三要素组件拼装</span><br><span class="line">CSCustomPopHighProprityHandler *handler = [CSCustomPopHighProprityHandler handler];</span><br><span class="line">CSCustomTestViewLoader *viewloader = [CSCustomTestViewLoader loader];</span><br><span class="line">CSCustomTestPopLoader *popLoader = [CSCustomTestPopLoader loader];</span><br><span class="line"></span><br><span class="line">//CSCustomPopManager底层方法调用</span><br><span class="line">[[CSCustomPopManager shareManager] showPopViewWithHandler:handler viewLoader:viewloader popControllerLoader:popLoader completeBlock:^(id data) &#123;</span><br><span class="line"></span><br><span class="line">&#125; fromViewController:nil];</span><br></pre></td></tr></table></figure>
-<p>你可以理解CSPopKit这套方案为：<br>CSCustomPopManager为一个厨子（工具类），通过不同的食材元素（弹窗元素）拼接，烹饪出各种不同的食品（弹窗）。</p>
-<h4 id="CSPopKit设计："><a href="#CSPopKit设计：" class="headerlink" title="CSPopKit设计："></a>CSPopKit设计：</h4><p><strong>设计历程</strong></p>
-<p>弹窗这类业务较轻，而且多重业务弹窗业务相近，而且同一个app内的弹窗风格相近，所以在设计时容易直接想到用一个manager去中心化管理弹窗，用一个统一的空间作为弹窗展示，同时视图在尽量重用的基础上根据业务的不同做各种区分判断。<br>这样暴露的问题是：</p>
-<ol>
-<li>弹窗业务变多之后，manager成了一个业务处理的中心爆炸类，包含各类弹窗业务展示条件判断，弹窗视图上元素点击业务处理，数据埋点处理等等，</li>
-<li>视图这层同样也因为被复用的太多，各种元素选择性的hidden，同一按钮事件根据业务区分不同的delegate回调出去；<br>整个业务线已经纠缠的傻傻分不清了。</li>
-</ol>
-<p>在此基础上可以再根据弹窗业务线将不同的弹窗业务划分到不同的manager当中，a类业务弹窗用aManager,b类弹窗用bManager,这样从业务职责上就区分出了不同业务，每个业务间相对独立，但这样同样面临以下问题:</p>
-<ol>
-<li>单例太多，浪费内存；</li>
-<li>弹窗manager各自独立，没有统一规则，无法做到优先级展示；</li>
-</ol>
-<p>回到该模块最初的需求，是希望每一个弹窗都能灵活的个性化内容配置，能定制各种弹出，消失动画，能单独处理自己的业务逻辑，基于这些，突然想到用组件的形式去拼接一个弹窗业务。<br>最终在项目中经过实践证明，用组件方式，解决了所有以上的痛点，并且该模块已经形成一个模板，对接触这类业务的新人，也能轻松接入新的弹窗业务。</p>
-<p><strong>使用介绍:</strong></p>
-<p>在CSPopKit中，弹窗的完整实现由以下三要素组成：</p>
-<ul>
-<li>CSCustomPopViewLoader</li>
-</ul>
-<p>每个弹窗都有独特定制的view,该view仅仅表达弹窗的内容元素，它与弹窗在什么位置，通过什么方法展示，消失都无关，CSCustomPopViewLoader就是负责装载这个内容view；</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopViewLoader.m</span><br><span class="line"></span><br><span class="line">- (CSCustomPopView *)view</span><br><span class="line">&#123;</span><br><span class="line">    return [CSCustomPopView popView];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>CSCustomPopControllerLoader</li>
-</ul>
-<p>每个弹窗都有自己的展示，消失方式，渐变出现，消失，展示在屏幕的中间，这些都是可以个性化控制，CSCustomPopControllerLoader负责个性化展示；</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopControllerLoader.m</span><br><span class="line"></span><br><span class="line">- (void)setContent:(UIView *)content</span><br><span class="line">&#123;</span><br><span class="line">    CSPopController *popController = [[CSPopController alloc] initWithContent:content];</span><br><span class="line">    self.popController = popController;</span><br><span class="line"></span><br><span class="line">    //通过popTheme来定义不同的展示风格</span><br><span class="line">    CSPopTheme *theme = [CSPopTheme defaultTheme];</span><br><span class="line">    popController.theme = theme;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>CSCustomPopHandler</li>
-</ul>
-<p>每个弹窗都应该有自己的业务处理，弹窗是否需要展示，展示时机是什么，弹窗视图上的元素点击后如何响应，这些都交给CSCustomPopHandler处理。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopHandler.m</span><br><span class="line"></span><br><span class="line">- (void)dismissPopView:(CSCustomPopView *)popView</span><br><span class="line">&#123;</span><br><span class="line">    [[CSPopViewManager sharedManager] removePop:self];</span><br><span class="line">    [self.popController dismissPopControllerAnimated:YES];</span><br><span class="line">    self.reformer = nil;</span><br><span class="line">    self.popView = nil;</span><br><span class="line">    self.popController = nil;</span><br><span class="line">    self.completeBlock = nil;</span><br><span class="line">    self.fromViewController = nil;</span><br><span class="line">    //remove self from manager handlers array</span><br><span class="line">    if (self.delegate &amp;&amp; [self.delegate respondsToSelector:@selector(removeHandler:)])</span><br><span class="line">    &#123;</span><br><span class="line">       [self.delegate removeHandler:self];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>定制不同的元素后，如何将这些元素装载再一起，展示在界面上形成一个弹窗呢，这就是CSCustomPopManager做的事情。<br>具体实现逻辑参照这一底层最核心方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- (void)showPopViewWithHandler:(id&lt;CSCustomPopHandlerProtocol,CSCustomPopViewProrocol,CSPopPriorityProtocol&gt;)popHandler</span><br><span class="line">                    viewLoader:(id&lt;CSCustomPopViewLoaderProtocol&gt;)popViewLoader</span><br><span class="line">                     popControllerLoader:(id&lt;CSCustomPopControllerLoaderProtocol,CSPopControllerProviderProtocol&gt;)popControllerLoader</span><br><span class="line">                    popReformer:(id&lt;CSCustomReformerProtocol&gt;)popReformer</span><br><span class="line">                 completeBlock:(void (^)(id))completeBlock</span><br><span class="line">            fromViewController:(UIViewController *)viewController;</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;will show popView&quot;);</span><br><span class="line">    </span><br><span class="line">    id&lt;CSCustomReformerProtocol&gt; reformer = nil;</span><br><span class="line">    CSCustomPopView *popView = nil;</span><br><span class="line">    id &lt;CSCustomPopControllerLoaderProtocol,CSPopControllerProviderProtocol&gt; popController = nil;</span><br><span class="line">    id&lt;CSCustomPopHandlerProtocol,CSCustomPopViewProrocol,CSPopPriorityProtocol&gt; handler = nil;</span><br><span class="line">   </span><br><span class="line">    //handler组件处理</span><br><span class="line">    if (popHandler == nil)</span><br><span class="line">    &#123;</span><br><span class="line">        handler = [CSCustomPopHandler handler];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        handler = popHandler;</span><br><span class="line">    &#125;</span><br><span class="line">    handler.delegate = self;</span><br><span class="line">    handler.completeBlock = completeBlock;</span><br><span class="line">    handler.fromViewController = viewController;</span><br><span class="line">    [self.handlers addObject:handler];</span><br><span class="line">    </span><br><span class="line">    //reformer组件处理</span><br><span class="line">    if (popReformer == nil)</span><br><span class="line">    &#123;</span><br><span class="line">        reformer = [CSCustomPopReformer reformer];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        reformer = popReformer;</span><br><span class="line">    &#125;</span><br><span class="line">    handler.reformer = reformer;</span><br><span class="line">    </span><br><span class="line">    //viewloader组件处理:reformer内部处理viewloader是否为空以及方法调用</span><br><span class="line">    if (reformer &amp;&amp; [reformer respondsToSelector:@selector(fetchPopViewWithData:viewLoader:)])</span><br><span class="line">    &#123;</span><br><span class="line">        popView = [reformer fetchPopViewWithData:handler.data viewLoader:popViewLoader];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;reformer not implemention fetchPopViewWithModel:viewLoader method&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    popView.delegate = handler;</span><br><span class="line">    handler.popView = popView;</span><br><span class="line">    </span><br><span class="line">    if (handler &amp;&amp; [handler respondsToSelector:@selector(willPresentPopView)])</span><br><span class="line">    &#123;</span><br><span class="line">        [handler willPresentPopView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;handler not implemention willPresentPopView menthod&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    BOOL cancel = [[CSPopViewManager sharedManager] addPop:handler];</span><br><span class="line">    if (cancel)</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;cancel pop for popView,priority:%ld&quot;,[handler priority]);</span><br><span class="line">        if (handler &amp;&amp; [handler respondsToSelector:@selector(cancelPresentPopView)])</span><br><span class="line">        &#123;</span><br><span class="line">            [handler cancelPresentPopView];</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">            NSLog(@&quot;handler not implemention cancelPresentPopView menthod&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;popView did show,priority:%ld&quot;,[handler priority]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    //popController组件处理：reformer内部处理popController组件是否为空以及方法调用</span><br><span class="line">    if (reformer &amp;&amp; [reformer respondsToSelector:@selector(fetchPopControllerWithData:popControllerLoader:view:)])</span><br><span class="line">    &#123;</span><br><span class="line">        popController = [reformer fetchPopControllerWithData:handler.data popControllerLoader:popControllerLoader view:popView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;reformer not implemention fetchPopControllerWithData:popControllerLoader:view: method&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    </span><br><span class="line">    handler.popController = popController;</span><br><span class="line">  </span><br><span class="line">    [handler.popController presentPopControllerAnimated:YES];</span><br><span class="line">    if (handler &amp;&amp; [handler respondsToSelector:@selector(didPresentPopView)])</span><br><span class="line">    &#123;</span><br><span class="line">        [handler didPresentPopView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;handler not implemention didPresentPopView menthod&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;present popView type:%@,data:%@&quot;,NSStringFromClass([popView class]),handler.data);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<h5 id="其他1："><a href="#其他1：" class="headerlink" title="其他1："></a>其他1：</h5><p>CSPopViewManager</p>
-<p>该弹窗方案提供一套弹窗优先级控制逻辑，每个弹窗业务都可以自定义自己的优先级priority，规定界面上只允许展示一个弹窗。当present一个弹窗a，首先判断当前是否有弹窗展示，没有则直接展示，若有弹窗b，比较弹窗a和弹窗b的优先级，如果a优先级高于b，dismiss当前展示的弹窗b，再present弹窗a，如果a优先级低，弹窗a取消这次present。这套优先级控制逻辑比较简单，如果你有更复杂的控制逻辑，可以在此基础上修改。<br>这套优先级控制通过该模块控制：</p>
-<p><img src="https://github.com/joy_yu/CSPopKit/blob/master/README/屏幕快照%202018-04-04%20下午11.44.53.png" alt="Alt text"></p>
-<h4 id="其他2"><a href="#其他2" class="headerlink" title="其他2:"></a>其他2:</h4><p>CSPopController</p>
-<p><img src="https://github.com/joy_yu/CSPopKit/blob/master/README/屏幕快照%202018-04-04%20下午11.39.12.png" alt="Alt text"></p>
-<p>CSPopController是一个独立的弹窗展示控件，可以单独使用，使用很简单:<br>内部就是通过外界传入的弹窗视图contentView进行包裹，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithContent:(UIView *)content;</span><br></pre></td></tr></table></figure></p>
-<p>在外界直接通过present,dissmiss方法来present，dismiss弹窗。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//present</span><br><span class="line">- (void)presentPopControllerAnimated:(BOOL)animated;</span><br><span class="line"></span><br><span class="line">//dismiss</span><br><span class="line">- (void)dismissPopControllerAnimated:(BOOL)animated;</span><br></pre></td></tr></table></figure>
-<p>唯一需要注意的是，传入的contentView需要遵循autolayout布局，而且需要添加底部约束，popController会在内部通过约束帮你做到高度自适应。</p>
-<p>popTheme的主题定制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)defaultTheme</span><br><span class="line">&#123;</span><br><span class="line">    CSPopTheme *defaultTheme = [[CSPopTheme alloc] init];</span><br><span class="line">    </span><br><span class="line">//圆角，宽度，弹出，消失动画，动画时间，是否支持点击空白消除等等 </span><br><span class="line"></span><br><span class="line">defaultTheme.maskTypeTheme(CSPopThemeMaskTypeDimmed).cornerRadiusTheme(16.0f).maxPopupWidthTheme(280.0f).animationPresentionDurationTheme(0.6f).animationDismissDurationTheme(0.6f).shouldDismissOnBackgroundTouchTheme(NO).popThemePresentationStyleTheme(CSPPopThemePresentationStyleSlideInFromTopAndAngleBounce).popThemeDismissStyleTheme(CSPPopThemeDismissStyleSlideInToBottomAndAngle).horizontalOffsetTheme(0.f).verticalOffsetTheme(0.f);</span><br><span class="line">    return defaultTheme;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://github.com/dormitory219/2018/07/29/CSPopKit - 一个弹窗实现方案/" data-id="cjk6y5d3m0000f0txq13ftuyk" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-前后端项目部署阿里云服务器" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/29/前后端项目部署阿里云服务器/" class="article-date">
-  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/07/29/前后端项目部署阿里云服务器/">前后端项目部署阿里云服务器</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>在开发环境下，vue-cli启动了一个node.js测试服务器，如果有ajax请求，可以通过dev-server 监听到请求，（此处同名，不跨域），这里监听的服务器就是为开发环境准备的node服务器，生成的内存html文件也默认部署在该服务下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">devServer: &#123;</span><br><span class="line">    host: HOST || config.dev.host,</span><br><span class="line">    port: PORT || config.dev.port,</span><br><span class="line">      ? &#123; warnings: false, errors: true &#125;</span><br><span class="line">      : false,</span><br><span class="line">    publicPath: config.dev.assetsPublicPath,</span><br><span class="line">    proxy: config.dev.proxyTable,</span><br><span class="line">    before(app)&#123;</span><br><span class="line">      app.use(&apos;/api&apos;,router);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>如果是另起一台node.js服务，则会产生跨域问题（端口号与vue默认配置的node服务的端口号不同，也为跨域），可以通过配置proxyTable来完成跨域请求<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">proxyTable: &#123;</span><br><span class="line">      &apos;/apis&apos;: &#123;</span><br><span class="line">        // 测试环境</span><br><span class="line">        target: &apos;127.0.0.1:8088&apos;,  // 接口域名</span><br><span class="line">        changeOrigin: true,  //是否跨域</span><br><span class="line">        pathRewrite: &#123;</span><br><span class="line">            &apos;^/apis&apos;: &apos;&apos;   //需要rewrite重写的,</span><br><span class="line">        &#125;              </span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></p>
-<p><a href="https://blog.csdn.net/zyx1303031629/article/details/79540859" target="_blank" rel="noopener">https://blog.csdn.net/zyx1303031629/article/details/79540859</a></p>
-<p> 在项目开发的时候，接口联调的时候一般都是同域名下，且不存在跨域的情况下进行接口联调，但是当我们现在使用vue-cli进行项目打包的时候，我们在本地启动服务器后，比如本地开发服务下是 <a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a> 这样的访问页面，但是我们的接口地址是 <a href="http://xxxx.com/save/index" target="_blank" rel="noopener">http://xxxx.com/save/index</a> 这样的接口地址，我们这样直接使用会存在跨域的请求，导致接口请求不成功，因此我们需要在打包的时候配置一下，我们进入 config/index.js 代码下如下配置即可：</p>
-<p>html文件放在哪个服务地址下，ajax请求的域名即是该服务的域名（vue项目部署在了github.io上，ajax请求如下：）<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/ajax%E8%AF%B7%E6%B1%82.png" alt="Alt text"></p>
-<p>部署在腾讯云ip为140.143.165.181，域名为dormitory219.top的服务器上时：<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/ajax%E8%AF%B7%E6%B1%820.png" alt="Alt text"><br>服务器代码部署：部署在nginx服务器下:<br>打包文件为static文件夹和html文件,放在ngix根目录html下<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/%E8%85%BE%E8%AE%AF%E4%BA%91%E9%A5%BF%E4%BA%86%E4%B9%88%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2nginx.png" alt=""></p>
-<p>在本地开发时：<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/ajax%E8%AF%B7%E6%B1%822.png" alt=""></p>
-<h2 id="部署上线："><a href="#部署上线：" class="headerlink" title="部署上线："></a>部署上线：</h2><ol>
-<li>npm build生成的文件夹上传到nginx目录,开启nginx服务，<a href="http://www.dormitory219.top/element.html可访问到，但无数据（api/seller，api/data，api/goods通过ajax请求后台数据）；前端代码部署成功" target="_blank" rel="noopener">http://www.dormitory219.top/element.html可访问到，但无数据（api/seller，api/data，api/goods通过ajax请求后台数据）；前端代码部署成功</a>;</li>
-<li>node.js 后台服务代码上传到云服务器，pm2启动服务，通过<a href="http://140.143.165.181:8765/api/seller可访问到数据；后端代码部署成功，监听8765端口；" target="_blank" rel="noopener">http://140.143.165.181:8765/api/seller可访问到数据；后端代码部署成功，监听8765端口；</a></li>
-<li><p>设置nginx的反向代理到node.js服务，8765端口</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80 default_server;</span><br><span class="line">    listen       [::]:80 default_server;</span><br><span class="line">    server_name  _;</span><br><span class="line">    root         /usr/share/nginx/html;</span><br><span class="line">    include /etc/nginx/default.d/*.conf;</span><br><span class="line">    location / &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    location /api &#123;      //此处为后来添加</span><br><span class="line">       proxy_pass http://127.0.0.1:8765;</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 /404.html;</span><br><span class="line">        location = /40x.html &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>访问<a href="http://www.dormitory219.top/element.html有数据展示，前后端走通。" target="_blank" rel="noopener">http://www.dormitory219.top/element.html有数据展示，前后端走通。</a></p>
-</li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://github.com/dormitory219/2018/07/29/前后端项目部署阿里云服务器/" data-id="cjk6y5d3q0001f0txjwq7c5l5" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
     <article id="post-CSReduxKit - 单向数据流方案" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/07/29/CSReduxKit - 单向数据流方案/" class="article-date">
@@ -231,7 +95,7 @@
 <p>相关概念：<br><a href="http://www.redux.org.cn" target="_blank" rel="noopener">Redux 中文文档</a></p>
 <p>iOS大佬onevcat曾对redux做过相关介绍。</p>
 <p>可参考文章：<br><a href="https://onevcat.com/2017/07/state-based-viewcontroller/" target="_blank" rel="noopener">单向数据流动的函数式 View Controller</a></p>
-<h3 id="redux概念"><a href="#redux概念" class="headerlink" title="redux概念"></a>redux概念</h3><p><img src="./redux_basic_data_flow.gif" alt="Alt text"></p>
+<h3 id="redux概念"><a href="#redux概念" class="headerlink" title="redux概念"></a>redux概念</h3><p><img src="https://img.cntofu.com/book/react-tutorial/image/flux-overview.png" alt="Alt text"></p>
 <p>当用户点击了视图上的某个元素时，会发出一个 Action，<br>这个 Action 包含了两个基本元素：</p>
 <ul>
 <li>Action Type;</li>
@@ -297,7 +161,143 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://github.com/dormitory219/2018/07/29/CSReduxKit - 单向数据流方案/" data-id="cjk6y5d3s0002f0txycbgb2uf" class="article-share-link">Share</a>
+      <a data-url="https://github.com/dormitory219/2018/07/29/CSReduxKit - 单向数据流方案/" data-id="cjk6zqgf400002wtxvrtmcohh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-CSPopKit - 一个弹窗实现方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>To run the example project, clone the repo, and run <code>pod install</code> from the Example directory first.</p>
+<h2 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h2><p>CSPopKit is available through <a href="http://cocoapods.org" target="_blank" rel="noopener">CocoaPods</a>. To install<br>it, simply add the following line to your Podfile:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'CSPopKit'</span></span><br></pre></td></tr></table></figure>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p><strong>CSPopKit是从项目中抽离出的一套弹窗框架，旨在为app内所有的弹窗业务提供一套规范的实现。</strong></p>
+<p>在我司项目中，经过CSPopkit这套方案，重构的弹窗业务已经独立成一个模块，结构如下图<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/CSPopKit1.jpg" alt="Alt text"></p>
+<h4 id="背景："><a href="#背景：" class="headerlink" title="背景："></a>背景：</h4><p>多人维护的项目，针对产品需求需要定制各种弹窗，因为没有一套规范实现，每个人根据自己的代码习惯定制不同风格的弹窗，久而久之，项目内出现了各种各种的弹窗代码，有的是直接定制view，添加到superView上，有的是用controller定制，有的加window上，这些杂乱的代码分散在各处，无法清晰梳理出弹窗相关业务的逻辑，而且由于各种各种的弹窗增多，触发时机不同，有可能会出现界面上出现多个弹窗的case，这时候如果要做弹窗的优先级展示，因没有一个底层去维护这些弹窗逻辑，根本就无力做到弹窗的分级控制，基于这些，对项目中的弹窗进行了全部重构。</p>
+<h4 id="CSPopKit使用："><a href="#CSPopKit使用：" class="headerlink" title="CSPopKit使用："></a>CSPopKit使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//CSPopKit定义的弹窗三要素组件拼装</span><br><span class="line">CSCustomPopHighProprityHandler *handler = [CSCustomPopHighProprityHandler handler];</span><br><span class="line">CSCustomTestViewLoader *viewloader = [CSCustomTestViewLoader loader];</span><br><span class="line">CSCustomTestPopLoader *popLoader = [CSCustomTestPopLoader loader];</span><br><span class="line"></span><br><span class="line">//CSCustomPopManager底层方法调用</span><br><span class="line">[[CSCustomPopManager shareManager] showPopViewWithHandler:handler viewLoader:viewloader popControllerLoader:popLoader completeBlock:^(id data) &#123;</span><br><span class="line"></span><br><span class="line">&#125; fromViewController:nil];</span><br></pre></td></tr></table></figure>
+<p>你可以理解CSPopKit这套方案为：<br>CSCustomPopManager为一个厨子（工具类），通过不同的食材元素（弹窗元素）拼接，烹饪出各种不同的食品（弹窗）。</p>
+<h4 id="CSPopKit设计："><a href="#CSPopKit设计：" class="headerlink" title="CSPopKit设计："></a>CSPopKit设计：</h4><p><strong>设计历程</strong></p>
+<p>弹窗这类业务较轻，而且多重业务弹窗业务相近，而且同一个app内的弹窗风格相近，所以在设计时容易直接想到用一个manager去中心化管理弹窗，用一个统一的空间作为弹窗展示，同时视图在尽量重用的基础上根据业务的不同做各种区分判断。<br>这样暴露的问题是：</p>
+<ol>
+<li>弹窗业务变多之后，manager成了一个业务处理的中心爆炸类，包含各类弹窗业务展示条件判断，弹窗视图上元素点击业务处理，数据埋点处理等等，</li>
+<li>视图这层同样也因为被复用的太多，各种元素选择性的hidden，同一按钮事件根据业务区分不同的delegate回调出去；<br>整个业务线已经纠缠的傻傻分不清了。</li>
+</ol>
+<p>在此基础上可以再根据弹窗业务线将不同的弹窗业务划分到不同的manager当中，a类业务弹窗用aManager,b类弹窗用bManager,这样从业务职责上就区分出了不同业务，每个业务间相对独立，但这样同样面临以下问题:</p>
+<ol>
+<li>单例太多，浪费内存；</li>
+<li>弹窗manager各自独立，没有统一规则，无法做到优先级展示；</li>
+</ol>
+<p>回到该模块最初的需求，是希望每一个弹窗都能灵活的个性化内容配置，能定制各种弹出，消失动画，能单独处理自己的业务逻辑，基于这些，突然想到用组件的形式去拼接一个弹窗业务。<br>最终在项目中经过实践证明，用组件方式，解决了所有以上的痛点，并且该模块已经形成一个模板，对接触这类业务的新人，也能轻松接入新的弹窗业务。</p>
+<p><strong>使用介绍:</strong></p>
+<p>在CSPopKit中，弹窗的完整实现由以下三要素组成：</p>
+<ul>
+<li>CSCustomPopViewLoader</li>
+</ul>
+<p>每个弹窗都有独特定制的view,该view仅仅表达弹窗的内容元素，它与弹窗在什么位置，通过什么方法展示，消失都无关，CSCustomPopViewLoader就是负责装载这个内容view；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopViewLoader.m</span><br><span class="line"></span><br><span class="line">- (CSCustomPopView *)view</span><br><span class="line">&#123;</span><br><span class="line">    return [CSCustomPopView popView];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>CSCustomPopControllerLoader</li>
+</ul>
+<p>每个弹窗都有自己的展示，消失方式，渐变出现，消失，展示在屏幕的中间，这些都是可以个性化控制，CSCustomPopControllerLoader负责个性化展示；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopControllerLoader.m</span><br><span class="line"></span><br><span class="line">- (void)setContent:(UIView *)content</span><br><span class="line">&#123;</span><br><span class="line">    CSPopController *popController = [[CSPopController alloc] initWithContent:content];</span><br><span class="line">    self.popController = popController;</span><br><span class="line"></span><br><span class="line">    //通过popTheme来定义不同的展示风格</span><br><span class="line">    CSPopTheme *theme = [CSPopTheme defaultTheme];</span><br><span class="line">    popController.theme = theme;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>CSCustomPopHandler</li>
+</ul>
+<p>每个弹窗都应该有自己的业务处理，弹窗是否需要展示，展示时机是什么，弹窗视图上的元素点击后如何响应，这些都交给CSCustomPopHandler处理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopHandler.m</span><br><span class="line"></span><br><span class="line">- (void)dismissPopView:(CSCustomPopView *)popView</span><br><span class="line">&#123;</span><br><span class="line">    [[CSPopViewManager sharedManager] removePop:self];</span><br><span class="line">    [self.popController dismissPopControllerAnimated:YES];</span><br><span class="line">    self.reformer = nil;</span><br><span class="line">    self.popView = nil;</span><br><span class="line">    self.popController = nil;</span><br><span class="line">    self.completeBlock = nil;</span><br><span class="line">    self.fromViewController = nil;</span><br><span class="line">    //remove self from manager handlers array</span><br><span class="line">    if (self.delegate &amp;&amp; [self.delegate respondsToSelector:@selector(removeHandler:)])</span><br><span class="line">    &#123;</span><br><span class="line">       [self.delegate removeHandler:self];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定制不同的元素后，如何将这些元素装载再一起，展示在界面上形成一个弹窗呢，这就是CSCustomPopManager做的事情。<br>具体实现逻辑参照这一底层最核心方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- (void)showPopViewWithHandler:(id&lt;CSCustomPopHandlerProtocol,CSCustomPopViewProrocol,CSPopPriorityProtocol&gt;)popHandler</span><br><span class="line">                    viewLoader:(id&lt;CSCustomPopViewLoaderProtocol&gt;)popViewLoader</span><br><span class="line">                     popControllerLoader:(id&lt;CSCustomPopControllerLoaderProtocol,CSPopControllerProviderProtocol&gt;)popControllerLoader</span><br><span class="line">                    popReformer:(id&lt;CSCustomReformerProtocol&gt;)popReformer</span><br><span class="line">                 completeBlock:(void (^)(id))completeBlock</span><br><span class="line">            fromViewController:(UIViewController *)viewController;</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;will show popView&quot;);</span><br><span class="line">    </span><br><span class="line">    id&lt;CSCustomReformerProtocol&gt; reformer = nil;</span><br><span class="line">    CSCustomPopView *popView = nil;</span><br><span class="line">    id &lt;CSCustomPopControllerLoaderProtocol,CSPopControllerProviderProtocol&gt; popController = nil;</span><br><span class="line">    id&lt;CSCustomPopHandlerProtocol,CSCustomPopViewProrocol,CSPopPriorityProtocol&gt; handler = nil;</span><br><span class="line">   </span><br><span class="line">    //handler组件处理</span><br><span class="line">    if (popHandler == nil)</span><br><span class="line">    &#123;</span><br><span class="line">        handler = [CSCustomPopHandler handler];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        handler = popHandler;</span><br><span class="line">    &#125;</span><br><span class="line">    handler.delegate = self;</span><br><span class="line">    handler.completeBlock = completeBlock;</span><br><span class="line">    handler.fromViewController = viewController;</span><br><span class="line">    [self.handlers addObject:handler];</span><br><span class="line">    </span><br><span class="line">    //reformer组件处理</span><br><span class="line">    if (popReformer == nil)</span><br><span class="line">    &#123;</span><br><span class="line">        reformer = [CSCustomPopReformer reformer];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        reformer = popReformer;</span><br><span class="line">    &#125;</span><br><span class="line">    handler.reformer = reformer;</span><br><span class="line">    </span><br><span class="line">    //viewloader组件处理:reformer内部处理viewloader是否为空以及方法调用</span><br><span class="line">    if (reformer &amp;&amp; [reformer respondsToSelector:@selector(fetchPopViewWithData:viewLoader:)])</span><br><span class="line">    &#123;</span><br><span class="line">        popView = [reformer fetchPopViewWithData:handler.data viewLoader:popViewLoader];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;reformer not implemention fetchPopViewWithModel:viewLoader method&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    popView.delegate = handler;</span><br><span class="line">    handler.popView = popView;</span><br><span class="line">    </span><br><span class="line">    if (handler &amp;&amp; [handler respondsToSelector:@selector(willPresentPopView)])</span><br><span class="line">    &#123;</span><br><span class="line">        [handler willPresentPopView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;handler not implemention willPresentPopView menthod&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    BOOL cancel = [[CSPopViewManager sharedManager] addPop:handler];</span><br><span class="line">    if (cancel)</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;cancel pop for popView,priority:%ld&quot;,[handler priority]);</span><br><span class="line">        if (handler &amp;&amp; [handler respondsToSelector:@selector(cancelPresentPopView)])</span><br><span class="line">        &#123;</span><br><span class="line">            [handler cancelPresentPopView];</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">            NSLog(@&quot;handler not implemention cancelPresentPopView menthod&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;popView did show,priority:%ld&quot;,[handler priority]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    //popController组件处理：reformer内部处理popController组件是否为空以及方法调用</span><br><span class="line">    if (reformer &amp;&amp; [reformer respondsToSelector:@selector(fetchPopControllerWithData:popControllerLoader:view:)])</span><br><span class="line">    &#123;</span><br><span class="line">        popController = [reformer fetchPopControllerWithData:handler.data popControllerLoader:popControllerLoader view:popView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;reformer not implemention fetchPopControllerWithData:popControllerLoader:view: method&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    </span><br><span class="line">    handler.popController = popController;</span><br><span class="line">  </span><br><span class="line">    [handler.popController presentPopControllerAnimated:YES];</span><br><span class="line">    if (handler &amp;&amp; [handler respondsToSelector:@selector(didPresentPopView)])</span><br><span class="line">    &#123;</span><br><span class="line">        [handler didPresentPopView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;handler not implemention didPresentPopView menthod&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;present popView type:%@,data:%@&quot;,NSStringFromClass([popView class]),handler.data);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h5 id="其他1："><a href="#其他1：" class="headerlink" title="其他1："></a>其他1：</h5><p>CSPopViewManager</p>
+<p>该弹窗方案提供一套弹窗优先级控制逻辑，每个弹窗业务都可以自定义自己的优先级priority，规定界面上只允许展示一个弹窗。当present一个弹窗a，首先判断当前是否有弹窗展示，没有则直接展示，若有弹窗b，比较弹窗a和弹窗b的优先级，如果a优先级高于b，dismiss当前展示的弹窗b，再present弹窗a，如果a优先级低，弹窗a取消这次present。这套优先级控制逻辑比较简单，如果你有更复杂的控制逻辑，可以在此基础上修改。<br>这套优先级控制通过该模块控制：</p>
+<p><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/CSPopKit2.png" alt="Alt text"></p>
+<h4 id="其他2"><a href="#其他2" class="headerlink" title="其他2:"></a>其他2:</h4><p>CSPopController</p>
+<p><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/CSPopKit3.png" alt="Alt text"></p>
+<p>CSPopController是一个独立的弹窗展示控件，可以单独使用，使用很简单:<br>内部就是通过外界传入的弹窗视图contentView进行包裹，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithContent:(UIView *)content;</span><br></pre></td></tr></table></figure></p>
+<p>在外界直接通过present,dissmiss方法来present，dismiss弹窗。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//present</span><br><span class="line">- (void)presentPopControllerAnimated:(BOOL)animated;</span><br><span class="line"></span><br><span class="line">//dismiss</span><br><span class="line">- (void)dismissPopControllerAnimated:(BOOL)animated;</span><br></pre></td></tr></table></figure>
+<p>唯一需要注意的是，传入的contentView需要遵循autolayout布局，而且需要添加底部约束，popController会在内部通过约束帮你做到高度自适应。</p>
+<p>popTheme的主题定制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)defaultTheme</span><br><span class="line">&#123;</span><br><span class="line">    CSPopTheme *defaultTheme = [[CSPopTheme alloc] init];</span><br><span class="line">    </span><br><span class="line">//圆角，宽度，弹出，消失动画，动画时间，是否支持点击空白消除等等 </span><br><span class="line"></span><br><span class="line">defaultTheme.maskTypeTheme(CSPopThemeMaskTypeDimmed).cornerRadiusTheme(16.0f).maxPopupWidthTheme(280.0f).animationPresentionDurationTheme(0.6f).animationDismissDurationTheme(0.6f).shouldDismissOnBackgroundTouchTheme(NO).popThemePresentationStyleTheme(CSPPopThemePresentationStyleSlideInFromTopAndAngleBounce).popThemeDismissStyleTheme(CSPPopThemeDismissStyleSlideInToBottomAndAngle).horizontalOffsetTheme(0.f).verticalOffsetTheme(0.f);</span><br><span class="line">    return defaultTheme;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/CSPopKit - 一个弹窗实现方案/" data-id="cjk6zqgf900012wtxc99bszw3" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Web前后端项目部署阿里云服务器" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/Web前后端项目部署阿里云服务器/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/29/Web前后端项目部署阿里云服务器/">前后端项目部署阿里云服务器</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><p>在开发环境下，vue-cli启动了一个node.js测试服务器，如果有ajax请求，可以通过dev-server 监听到请求，（此处同名，不跨域），这里监听的服务器就是为开发环境准备的node服务器，生成的内存html文件也默认部署在该服务下。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">devServer: &#123;</span><br><span class="line">    host: HOST || config.dev.host,</span><br><span class="line">    port: PORT || config.dev.port,</span><br><span class="line">      ? &#123; warnings: false, errors: true &#125;</span><br><span class="line">      : false,</span><br><span class="line">    publicPath: config.dev.assetsPublicPath,</span><br><span class="line">    proxy: config.dev.proxyTable,</span><br><span class="line">    before(app)&#123;</span><br><span class="line">      app.use(&apos;/api&apos;,router);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果是另起一台node.js服务，则会产生跨域问题（端口号与vue默认配置的node服务的端口号不同，也为跨域），可以通过配置proxyTable来完成跨域请求<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">proxyTable: &#123;</span><br><span class="line">      &apos;/apis&apos;: &#123;</span><br><span class="line">        // 测试环境</span><br><span class="line">        target: &apos;127.0.0.1:8088&apos;,  // 接口域名</span><br><span class="line">        changeOrigin: true,  //是否跨域</span><br><span class="line">        pathRewrite: &#123;</span><br><span class="line">            &apos;^/apis&apos;: &apos;&apos;   //需要rewrite重写的,</span><br><span class="line">        &#125;              </span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure></p>
+<p><a href="https://blog.csdn.net/zyx1303031629/article/details/79540859" target="_blank" rel="noopener">https://blog.csdn.net/zyx1303031629/article/details/79540859</a></p>
+<p> 在项目开发的时候，接口联调的时候一般都是同域名下，且不存在跨域的情况下进行接口联调，但是当我们现在使用vue-cli进行项目打包的时候，我们在本地启动服务器后，比如本地开发服务下是 <a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a> 这样的访问页面，但是我们的接口地址是 <a href="http://xxxx.com/save/index" target="_blank" rel="noopener">http://xxxx.com/save/index</a> 这样的接口地址，我们这样直接使用会存在跨域的请求，导致接口请求不成功，因此我们需要在打包的时候配置一下，我们进入 config/index.js 代码下如下配置即可：</p>
+<p>html文件放在哪个服务地址下，ajax请求的域名即是该服务的域名（vue项目部署在了github.io上，ajax请求如下：）<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/ajax%E8%AF%B7%E6%B1%82.png" alt="Alt text"></p>
+<p>部署在腾讯云ip为140.143.165.181，域名为dormitory219.top的服务器上时：<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/ajax%E8%AF%B7%E6%B1%820.png" alt="Alt text"><br>服务器代码部署：部署在nginx服务器下:<br>打包文件为static文件夹和html文件,放在ngix根目录html下<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/%E8%85%BE%E8%AE%AF%E4%BA%91%E9%A5%BF%E4%BA%86%E4%B9%88%E9%A1%B9%E7%9B%AE%E9%83%A8%E7%BD%B2nginx.png" alt=""></p>
+<p>在本地开发时：<br><img src="https://qcloudtest-1257113305.cos.ap-guangzhou.myqcloud.com/ajax%E8%AF%B7%E6%B1%822.png" alt=""></p>
+<h2 id="部署上线："><a href="#部署上线：" class="headerlink" title="部署上线："></a>部署上线：</h2><ol>
+<li>npm build生成的文件夹上传到nginx目录,开启nginx服务，<a href="http://www.dormitory219.top/element.html" target="_blank" rel="noopener">http://www.dormitory219.top/element.html</a> 可访问到，但无数据（api/seller，api/data，api/goods 通过ajax请求后台数据）；前端代码部署成功;</li>
+<li>node.js 后台服务代码上传到云服务器，pm2启动服务，通过<a href="http://140.143.165.181:8765/api/seller" target="_blank" rel="noopener">http://140.143.165.181:8765/api/seller</a> 可访问到数据；后端代码部署成功，监听8765端口；</li>
+<li><p>设置nginx的反向代理到node.js服务，8765端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen       80 default_server;</span><br><span class="line">    listen       [::]:80 default_server;</span><br><span class="line">    server_name  _;</span><br><span class="line">    root         /usr/share/nginx/html;</span><br><span class="line">    include /etc/nginx/default.d/*.conf;</span><br><span class="line">    location / &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    location /api &#123;      //此处为后来添加</span><br><span class="line">       proxy_pass http://127.0.0.1:8765;</span><br><span class="line">    &#125;</span><br><span class="line">    error_page 404 /404.html;</span><br><span class="line">        location = /40x.html &#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>访问<a href="http://www.dormitory219.top/element.html有数据展示，前后端走通。" target="_blank" rel="noopener">http://www.dormitory219.top/element.html有数据展示，前后端走通。</a></p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/Web前后端项目部署阿里云服务器/" data-id="cjk6zqgfb00022wtxcj3z7o4i" class="article-share-link">Share</a>
       
       
     </footer>
@@ -345,7 +345,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://github.com/dormitory219/2018/07/29/Vue项目实战/" data-id="cjk6y5d420003f0txcczwm4n3" class="article-share-link">Share</a>
+      <a data-url="https://github.com/dormitory219/2018/07/29/Vue项目实战/" data-id="cjk6zqgfl00032wtxq4c7b626" class="article-share-link">Share</a>
       
       
     </footer>
@@ -385,15 +385,15 @@
       <ul>
         
           <li>
+            <a href="/2018/07/29/CSReduxKit - 单向数据流方案/">CSReduxKit:单向数据流方案</a>
+          </li>
+        
+          <li>
             <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
           </li>
         
           <li>
-            <a href="/2018/07/29/前后端项目部署阿里云服务器/">前后端项目部署阿里云服务器</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/29/CSReduxKit - 单向数据流方案/">CSReduxKit:单向数据流方案</a>
+            <a href="/2018/07/29/Web前后端项目部署阿里云服务器/">前后端项目部署阿里云服务器</a>
           </li>
         
           <li>
