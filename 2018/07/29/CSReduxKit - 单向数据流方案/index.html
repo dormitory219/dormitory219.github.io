@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>CSReduxKit:单向数据流方案 | hello,Joy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ExampleTo run the example project, clone the repo, and run pod install from the Example directory first. InstallationCSReduxKit is available through CocoaPods. To installit, simply add the following l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSReduxKit:单向数据流方案">
+<meta property="og:url" content="https://github.com/dormitory219/2018/07/29/CSReduxKit - 单向数据流方案/index.html">
+<meta property="og:site_name" content="hello,Joy">
+<meta property="og:description" content="ExampleTo run the example project, clone the repo, and run pod install from the Example directory first. InstallationCSReduxKit is available through CocoaPods. To installit, simply add the following l">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://github.com/dormitory219/2018/07/29/CSReduxKit%20-%20单向数据流方案/redux_basic_data_flow.gif">
+<meta property="og:updated_time" content="2018-07-29T13:35:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CSReduxKit:单向数据流方案">
+<meta name="twitter:description" content="ExampleTo run the example project, clone the repo, and run pod install from the Example directory first. InstallationCSReduxKit is available through CocoaPods. To installit, simply add the following l">
+<meta name="twitter:image" content="https://github.com/dormitory219/2018/07/29/CSReduxKit%20-%20单向数据流方案/redux_basic_data_flow.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="hello,Joy" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hello,Joy</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Walk steps step by step</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://github.com/dormitory219"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-CSReduxKit - 单向数据流方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/CSReduxKit - 单向数据流方案/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      CSReduxKit:单向数据流方案
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>To run the example project, clone the repo, and run <code>pod install</code> from the Example directory first.</p>
+<h2 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h2><p>CSReduxKit is available through <a href="http://cocoapods.org" target="_blank" rel="noopener">CocoaPods</a>. To install<br>it, simply add the following line to your Podfile:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'CSReduxKit'</span></span><br></pre></td></tr></table></figure>
+<h2 id="Knowledge"><a href="#Knowledge" class="headerlink" title="Knowledge"></a>Knowledge</h2><p>CSReduxkit是基于redux在iOS上实现的一个单向数据流方案。</p>
+<p>相关概念：<br><a href="http://www.redux.org.cn" target="_blank" rel="noopener">Redux 中文文档</a></p>
+<p>iOS大佬onevcat曾对redux做过相关介绍。</p>
+<p>可参考文章：<br><a href="https://onevcat.com/2017/07/state-based-viewcontroller/" target="_blank" rel="noopener">单向数据流动的函数式 View Controller</a></p>
+<h3 id="redux概念"><a href="#redux概念" class="headerlink" title="redux概念"></a>redux概念</h3><p><img src="./redux_basic_data_flow.gif" alt="Alt text"></p>
+<p>当用户点击了视图上的某个元素时，会发出一个 Action，<br>这个 Action 包含了两个基本元素：</p>
+<ul>
+<li>Action Type;</li>
+<li>Action data;</li>
+</ul>
+<p>比如「点击按钮」这个 Action，可能会被描述为：Action(“buttonClickAction”, [“ID”: 100])。然后这个 Action 就会到达 Store。<br>Store 也很简单，只做两件事：</p>
+<ul>
+<li>接收 Action；</li>
+<li>将 Action 和 State 发送给 Reducer。</li>
+</ul>
+<p>Reducer 做的事情就更简单了，接收 Store 发出的 Action 和 State，内部运算之后，返回一个新的 State。<br>Store 拿到了新的 State 后，再把 State 发送给 View。View 渲染新的 State。</p>
+<p>各模块职责：</p>
+<ol>
+<li>View</li>
+</ol>
+<p>View 可以理解为一个「壳」，所有的数据都由 State 提供，这样就把表现层和数据层分开了。</p>
+<ol start="2">
+<li>Action</li>
+</ol>
+<p>Action 用来描述发生了什么事情，比如不小心用脚踢到了椅子，神经系统就会把这个信息传递给大脑，这个信息就是 Action，而大脑就是之后要讲到的 Store。</p>
+<ol start="3">
+<li>Store</li>
+</ol>
+<p>store是核心模块，就像大脑会不停地接受到各种 Action，并作出反应，只不过在这里 Store 并不具备「做决定」的能力，而是把这个 Action 交给了所有可能关心它的 Reducer。</p>
+<ol start="4">
+<li>State</li>
+</ol>
+<p>State 是一个隐形的杀手，因为使用它极其方便，而它的危害也不会瞬间爆发，就像温水煮青蛙一样，等发现问题越来越多、被各种多线程问题困扰时，就会感受到它的威力了。</p>
+<ol start="5">
+<li>Reducer </li>
+</ol>
+<p>reducer负责接收 Store 发出的 Action 和 State，内部运算之后，返回一个新的 State 给 store。</p>
+<h3 id="CSReduxKit实现"><a href="#CSReduxKit实现" class="headerlink" title="CSReduxKit实现"></a>CSReduxKit实现</h3><h5 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h5><p>与Redux类似，在使用CSReduxKit的模块，数据收于store这一层，修改也是在这一层，我们不提倡一个app只有一个store，而是根据不同的模块划分不同的store,该store继承于CSStore,CSStore遵循CSStoreProtocol协议：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@protocol CSStoreProtocol&lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) id&lt;CSStateProtocol&gt; state;</span><br><span class="line"></span><br><span class="line">- (void)dispatch:(id&lt;CSActionProtocol&gt;)action;</span><br><span class="line"></span><br><span class="line">- (void)subscribe:(Subscription)subscription;</span><br><span class="line"></span><br><span class="line">- (void)unSubscribe:(Subscription)subscription;</span><br><span class="line"></span><br><span class="line">- (void)executeAllSubscribeWithAction:(id&lt;CSActionProtocol&gt;)action state:(id&lt;CSStateProtocol&gt;)state;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h5 id="Reducer"><a href="#Reducer" class="headerlink" title="Reducer"></a>Reducer</h5><p>CSReducer负责对store传入的action,state将数据重新打包成新的状态返回到store, CSAction遵循CSReducerProtocol协议：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@protocol CSReducerProtocol&lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">- (void)executeWithAction:(id&lt;CSActionProtocol&gt;)action state:(id&lt;CSStateProtocol&gt;)state finishBlock:(void (^)(id &lt;CSStateProtocol&gt; state))finishBlock;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h5 id="Action"><a href="#Action" class="headerlink" title="Action"></a>Action</h5><p>CSAction定义为视图对象的更新操作，比如点击一个按钮，开始输入文字，刷新tableView等。CSAction遵循CSActionProtocol协议：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@protocol CSActionProtocol&lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,assign) NSInteger type;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) id data;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h3 id="Example-1"><a href="#Example-1" class="headerlink" title="Example"></a>Example</h3><p>Example是一个通过C SReduxKit 实现的一个单向数据流界面。</p>
+<p>交互为点击右上角添加按钮，进入文本输入状态，文本输入后添加一条记录到下方的 tableView 中实时显示，同时上面的 title 视图也会更新显示最新一条添加记录。</p>
+<p>该界面视图元素有：</p>
+<ul>
+<li>上方的标题视图(CSTitleView)</li>
+<li>中间的文本输入视图(CSInputView)</li>
+<li>下方的tableView(CSTableView)</li>
+</ul>
+<p>这三个视图元素都单独功能封装了，这样的一个交互就可以体现一个视图的事件触发如何通知更新到界面中其他所有需要更新的元素去刷新内容。</p>
+<p><strong>例如点击右上角“添加”这个动作，CSReduxKit是怎样做的：</strong></p>
+<p><em>生成 CSDemoAction ，dispatch action 到 CSDemoStore：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//ViewController.m</span><br><span class="line"></span><br><span class="line">- (IBAction)addAction:(id)sender</span><br><span class="line">&#123;</span><br><span class="line">    CSDemoAction *action = [[CSDemoAction alloc] init];</span><br><span class="line">    action.type = CSDemoActionbeginAddContentType;</span><br><span class="line">    [self.store dispatch:action];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>CSDemoStore 将 action，state 交给 CSDemoReducer 处理：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//CSDemoStore.m</span><br><span class="line"></span><br><span class="line">- (void)dispatch:(CSDemoAction *)action</span><br><span class="line">&#123;</span><br><span class="line">    CSDemoReducer *reducer = [CSDemoReducer new];</span><br><span class="line">    [reducer executeWithAction:action state:self.state finishBlock:^(CSDemoState *state) &#123;</span><br><span class="line">        </span><br><span class="line">        self.state = state;</span><br><span class="line">        [self executeAllSubscribeWithAction:action state:state];</span><br><span class="line"></span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>CSDemoReducer 根据 action 更新 state ,返回到 store：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//CSDemoReducer.m</span><br><span class="line"></span><br><span class="line">- (void)executeWithAction:(CSDemoAction *)action state:(CSDemoState *)state finishBlock:(void (^)(id&lt;CSStateProtocol&gt;))finishBlock</span><br><span class="line">&#123;</span><br><span class="line">    switch (action.type)</span><br><span class="line">    &#123;</span><br><span class="line">        case CSDemoActionbeginAddContentType:</span><br><span class="line">        &#123;</span><br><span class="line">            state.canEdit = YES;</span><br><span class="line">        &#125;</span><br><span class="line">            break;</span><br><span class="line">        case CSDemoActionAddContentFinishType:</span><br><span class="line">        &#123;</span><br><span class="line">            if (action.data)</span><br><span class="line">            &#123;</span><br><span class="line">                [state updateWithData:action.data];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">            break;</span><br><span class="line">            </span><br><span class="line">        default:</span><br><span class="line">            break;</span><br><span class="line">    &#125;</span><br><span class="line">    finishBlock ? finishBlock(state) : nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>之后 store 再通知所有订阅的视图模块去更新内容：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//CSDemoStore.m</span><br><span class="line"></span><br><span class="line">    [reducer executeWithAction:action state:self.state finishBlock:^(CSDemoState *state) &#123;</span><br><span class="line">        </span><br><span class="line">        self.state = state;</span><br><span class="line">        [self executeAllSubscribeWithAction:action state:state];</span><br><span class="line"></span><br><span class="line">    &#125;];</span><br></pre></td></tr></table></figure>
+<p><em>这时 CSInputView 收到通知，根据 action，state 做自己应该做的事情：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">//CSInputView.m</span><br><span class="line"></span><br><span class="line">- (void)setStore:(CSDemoStore *)store</span><br><span class="line">&#123;</span><br><span class="line">    _store = store;</span><br><span class="line">    [store subscribe:^(CSDemoAction *action,CSDemoState *state) &#123;</span><br><span class="line">        CSDemoAction *demoAction = (CSDemoAction *)action;</span><br><span class="line">        if (demoAction.type == CSDemoActionbeginAddContentType)</span><br><span class="line">        &#123;</span><br><span class="line">            [self.textField becomeFirstResponder];</span><br><span class="line">        &#125;</span><br><span class="line">        else if (demoAction.type == CSDemoActionAddContentFinishType)</span><br><span class="line">        &#123;</span><br><span class="line">            [self.textField resignFirstResponder];</span><br><span class="line">            self.textField.text = nil;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>CSTableView 也是如此：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//CSTableView.m</span><br><span class="line"></span><br><span class="line">- (void)setStore:(CSDemoStore *)store</span><br><span class="line">&#123;</span><br><span class="line">    _store = store;</span><br><span class="line">    [store subscribe:^(CSDemoAction *action,CSDemoState *state) &#123;</span><br><span class="line">        CSDemoAction *demoAction = (CSDemoAction *)action;</span><br><span class="line">        CSDemoState *demoState = (CSDemoState *)state;</span><br><span class="line">        if (demoAction.type == CSDemoActionTitleClick)</span><br><span class="line">        &#123;</span><br><span class="line">            //doSth</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>view action -&gt; store -&gt; reducer -&gt; store -&gt; view 渲染的流程就走完。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/CSReduxKit - 单向数据流方案/" data-id="cjk6wq6vm00009htxd1jhre7g" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/07/29/Vue项目实战/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Vue项目实战:集vue webpack node.js es6 styles 线上部署等技术栈实战</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/29/CSReduxKit - 单向数据流方案/">CSReduxKit:单向数据流方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/Vue项目实战/">Vue项目实战:集vue webpack node.js es6 styles 线上部署等技术栈实战</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Joy<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

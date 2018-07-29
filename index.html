@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>hello,Joy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="hello,Joy">
+<meta property="og:url" content="https://github.com/dormitory219/index.html">
+<meta property="og:site_name" content="hello,Joy">
+<meta property="og:locale" content="default">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hello,Joy">
+  
+    <link rel="alternate" href="/atom.xml" title="hello,Joy" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hello,Joy</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Walk steps step by step</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://github.com/dormitory219"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-CSReduxKit - 单向数据流方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/CSReduxKit - 单向数据流方案/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/29/CSReduxKit - 单向数据流方案/">CSReduxKit:单向数据流方案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>To run the example project, clone the repo, and run <code>pod install</code> from the Example directory first.</p>
+<h2 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h2><p>CSReduxKit is available through <a href="http://cocoapods.org" target="_blank" rel="noopener">CocoaPods</a>. To install<br>it, simply add the following line to your Podfile:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'CSReduxKit'</span></span><br></pre></td></tr></table></figure>
+<h2 id="Knowledge"><a href="#Knowledge" class="headerlink" title="Knowledge"></a>Knowledge</h2><p>CSReduxkit是基于redux在iOS上实现的一个单向数据流方案。</p>
+<p>相关概念：<br><a href="http://www.redux.org.cn" target="_blank" rel="noopener">Redux 中文文档</a></p>
+<p>iOS大佬onevcat曾对redux做过相关介绍。</p>
+<p>可参考文章：<br><a href="https://onevcat.com/2017/07/state-based-viewcontroller/" target="_blank" rel="noopener">单向数据流动的函数式 View Controller</a></p>
+<h3 id="redux概念"><a href="#redux概念" class="headerlink" title="redux概念"></a>redux概念</h3><p><img src="./redux_basic_data_flow.gif" alt="Alt text"></p>
+<p>当用户点击了视图上的某个元素时，会发出一个 Action，<br>这个 Action 包含了两个基本元素：</p>
+<ul>
+<li>Action Type;</li>
+<li>Action data;</li>
+</ul>
+<p>比如「点击按钮」这个 Action，可能会被描述为：Action(“buttonClickAction”, [“ID”: 100])。然后这个 Action 就会到达 Store。<br>Store 也很简单，只做两件事：</p>
+<ul>
+<li>接收 Action；</li>
+<li>将 Action 和 State 发送给 Reducer。</li>
+</ul>
+<p>Reducer 做的事情就更简单了，接收 Store 发出的 Action 和 State，内部运算之后，返回一个新的 State。<br>Store 拿到了新的 State 后，再把 State 发送给 View。View 渲染新的 State。</p>
+<p>各模块职责：</p>
+<ol>
+<li>View</li>
+</ol>
+<p>View 可以理解为一个「壳」，所有的数据都由 State 提供，这样就把表现层和数据层分开了。</p>
+<ol start="2">
+<li>Action</li>
+</ol>
+<p>Action 用来描述发生了什么事情，比如不小心用脚踢到了椅子，神经系统就会把这个信息传递给大脑，这个信息就是 Action，而大脑就是之后要讲到的 Store。</p>
+<ol start="3">
+<li>Store</li>
+</ol>
+<p>store是核心模块，就像大脑会不停地接受到各种 Action，并作出反应，只不过在这里 Store 并不具备「做决定」的能力，而是把这个 Action 交给了所有可能关心它的 Reducer。</p>
+<ol start="4">
+<li>State</li>
+</ol>
+<p>State 是一个隐形的杀手，因为使用它极其方便，而它的危害也不会瞬间爆发，就像温水煮青蛙一样，等发现问题越来越多、被各种多线程问题困扰时，就会感受到它的威力了。</p>
+<ol start="5">
+<li>Reducer </li>
+</ol>
+<p>reducer负责接收 Store 发出的 Action 和 State，内部运算之后，返回一个新的 State 给 store。</p>
+<h3 id="CSReduxKit实现"><a href="#CSReduxKit实现" class="headerlink" title="CSReduxKit实现"></a>CSReduxKit实现</h3><h5 id="Store"><a href="#Store" class="headerlink" title="Store"></a>Store</h5><p>与Redux类似，在使用CSReduxKit的模块，数据收于store这一层，修改也是在这一层，我们不提倡一个app只有一个store，而是根据不同的模块划分不同的store,该store继承于CSStore,CSStore遵循CSStoreProtocol协议：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@protocol CSStoreProtocol&lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) id&lt;CSStateProtocol&gt; state;</span><br><span class="line"></span><br><span class="line">- (void)dispatch:(id&lt;CSActionProtocol&gt;)action;</span><br><span class="line"></span><br><span class="line">- (void)subscribe:(Subscription)subscription;</span><br><span class="line"></span><br><span class="line">- (void)unSubscribe:(Subscription)subscription;</span><br><span class="line"></span><br><span class="line">- (void)executeAllSubscribeWithAction:(id&lt;CSActionProtocol&gt;)action state:(id&lt;CSStateProtocol&gt;)state;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h5 id="Reducer"><a href="#Reducer" class="headerlink" title="Reducer"></a>Reducer</h5><p>CSReducer负责对store传入的action,state将数据重新打包成新的状态返回到store, CSAction遵循CSReducerProtocol协议：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@protocol CSReducerProtocol&lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">- (void)executeWithAction:(id&lt;CSActionProtocol&gt;)action state:(id&lt;CSStateProtocol&gt;)state finishBlock:(void (^)(id &lt;CSStateProtocol&gt; state))finishBlock;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h5 id="Action"><a href="#Action" class="headerlink" title="Action"></a>Action</h5><p>CSAction定义为视图对象的更新操作，比如点击一个按钮，开始输入文字，刷新tableView等。CSAction遵循CSActionProtocol协议：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@protocol CSActionProtocol&lt;NSObject&gt;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,assign) NSInteger type;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) id data;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<h3 id="Example-1"><a href="#Example-1" class="headerlink" title="Example"></a>Example</h3><p>Example是一个通过C SReduxKit 实现的一个单向数据流界面。</p>
+<p>交互为点击右上角添加按钮，进入文本输入状态，文本输入后添加一条记录到下方的 tableView 中实时显示，同时上面的 title 视图也会更新显示最新一条添加记录。</p>
+<p>该界面视图元素有：</p>
+<ul>
+<li>上方的标题视图(CSTitleView)</li>
+<li>中间的文本输入视图(CSInputView)</li>
+<li>下方的tableView(CSTableView)</li>
+</ul>
+<p>这三个视图元素都单独功能封装了，这样的一个交互就可以体现一个视图的事件触发如何通知更新到界面中其他所有需要更新的元素去刷新内容。</p>
+<p><strong>例如点击右上角“添加”这个动作，CSReduxKit是怎样做的：</strong></p>
+<p><em>生成 CSDemoAction ，dispatch action 到 CSDemoStore：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//ViewController.m</span><br><span class="line"></span><br><span class="line">- (IBAction)addAction:(id)sender</span><br><span class="line">&#123;</span><br><span class="line">    CSDemoAction *action = [[CSDemoAction alloc] init];</span><br><span class="line">    action.type = CSDemoActionbeginAddContentType;</span><br><span class="line">    [self.store dispatch:action];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>CSDemoStore 将 action，state 交给 CSDemoReducer 处理：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//CSDemoStore.m</span><br><span class="line"></span><br><span class="line">- (void)dispatch:(CSDemoAction *)action</span><br><span class="line">&#123;</span><br><span class="line">    CSDemoReducer *reducer = [CSDemoReducer new];</span><br><span class="line">    [reducer executeWithAction:action state:self.state finishBlock:^(CSDemoState *state) &#123;</span><br><span class="line">        </span><br><span class="line">        self.state = state;</span><br><span class="line">        [self executeAllSubscribeWithAction:action state:state];</span><br><span class="line"></span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>CSDemoReducer 根据 action 更新 state ,返回到 store：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">//CSDemoReducer.m</span><br><span class="line"></span><br><span class="line">- (void)executeWithAction:(CSDemoAction *)action state:(CSDemoState *)state finishBlock:(void (^)(id&lt;CSStateProtocol&gt;))finishBlock</span><br><span class="line">&#123;</span><br><span class="line">    switch (action.type)</span><br><span class="line">    &#123;</span><br><span class="line">        case CSDemoActionbeginAddContentType:</span><br><span class="line">        &#123;</span><br><span class="line">            state.canEdit = YES;</span><br><span class="line">        &#125;</span><br><span class="line">            break;</span><br><span class="line">        case CSDemoActionAddContentFinishType:</span><br><span class="line">        &#123;</span><br><span class="line">            if (action.data)</span><br><span class="line">            &#123;</span><br><span class="line">                [state updateWithData:action.data];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">            break;</span><br><span class="line">            </span><br><span class="line">        default:</span><br><span class="line">            break;</span><br><span class="line">    &#125;</span><br><span class="line">    finishBlock ? finishBlock(state) : nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>之后 store 再通知所有订阅的视图模块去更新内容：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//CSDemoStore.m</span><br><span class="line"></span><br><span class="line">    [reducer executeWithAction:action state:self.state finishBlock:^(CSDemoState *state) &#123;</span><br><span class="line">        </span><br><span class="line">        self.state = state;</span><br><span class="line">        [self executeAllSubscribeWithAction:action state:state];</span><br><span class="line"></span><br><span class="line">    &#125;];</span><br></pre></td></tr></table></figure>
+<p><em>这时 CSInputView 收到通知，根据 action，state 做自己应该做的事情：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">//CSInputView.m</span><br><span class="line"></span><br><span class="line">- (void)setStore:(CSDemoStore *)store</span><br><span class="line">&#123;</span><br><span class="line">    _store = store;</span><br><span class="line">    [store subscribe:^(CSDemoAction *action,CSDemoState *state) &#123;</span><br><span class="line">        CSDemoAction *demoAction = (CSDemoAction *)action;</span><br><span class="line">        if (demoAction.type == CSDemoActionbeginAddContentType)</span><br><span class="line">        &#123;</span><br><span class="line">            [self.textField becomeFirstResponder];</span><br><span class="line">        &#125;</span><br><span class="line">        else if (demoAction.type == CSDemoActionAddContentFinishType)</span><br><span class="line">        &#123;</span><br><span class="line">            [self.textField resignFirstResponder];</span><br><span class="line">            self.textField.text = nil;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>CSTableView 也是如此：</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">//CSTableView.m</span><br><span class="line"></span><br><span class="line">- (void)setStore:(CSDemoStore *)store</span><br><span class="line">&#123;</span><br><span class="line">    _store = store;</span><br><span class="line">    [store subscribe:^(CSDemoAction *action,CSDemoState *state) &#123;</span><br><span class="line">        CSDemoAction *demoAction = (CSDemoAction *)action;</span><br><span class="line">        CSDemoState *demoState = (CSDemoState *)state;</span><br><span class="line">        if (demoAction.type == CSDemoActionTitleClick)</span><br><span class="line">        &#123;</span><br><span class="line">            //doSth</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>view action -&gt; store -&gt; reducer -&gt; store -&gt; view 渲染的流程就走完。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/CSReduxKit - 单向数据流方案/" data-id="cjk6wq6vm00009htxd1jhre7g" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Vue项目实战" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/Vue项目实战/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/29/Vue项目实战/">Vue项目实战:集vue webpack node.js es6 styles 线上部署等技术栈实战</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Build-Setup"><a href="#Build-Setup" class="headerlink" title="Build Setup"></a>Build Setup</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># install dependencies</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># serve with hot reload at localhost:8080</span></span><br><span class="line">npm run dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># build for production with minification</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># build for production and view the bundle analyzer report</span></span><br><span class="line">npm run build --report</span><br></pre></td></tr></table></figure>
+<p>For a detailed explanation on how things work, check out the <a href="http://vuejs-templates.github.io/webpack/" target="_blank" rel="noopener">guide</a> and <a href="http://vuejs.github.io/vue-loader" target="_blank" rel="noopener">docs for vue-loader</a>.</p>
+<p>该项目目的：</p>
+<ol>
+<li>了解一个web端现代项目完整的开发流程；</li>
+<li>学会web端目前组件化、模块化的开发模式；</li>
+<li>掌握使用Vue-cli脚手架初始化Vue.js项目;</li>
+<li>vue.js框架使用，全家桶Vue-Router,axios,Vuex(除外)；</li>
+<li>掌握webpack构建web项目工程，了解webpack的打包原理；</li>
+<li>了解node.js提供后台api能力，模拟json后端数据（express框架），web目前前后端分离开发；</li>
+<li>熟悉es6语法,使用stylus,postCSS等框架。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/Vue项目实战/" data-id="cjk6wq6vq00019htx00h08wh9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-CSPopKit - 一个弹窗实现方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>To run the example project, clone the repo, and run <code>pod install</code> from the Example directory first.</p>
+<h2 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h2><p>CSPopKit is available through <a href="http://cocoapods.org" target="_blank" rel="noopener">CocoaPods</a>. To install<br>it, simply add the following line to your Podfile:</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">'CSPopKit'</span></span><br></pre></td></tr></table></figure>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p><strong>CSPopKit是从项目中抽离出的一套弹窗框架，旨在为app内所有的弹窗业务提供一套规范的实现。</strong></p>
+<p>在我司项目中，经过CSPopkit这套方案，重构的弹窗业务已经独立成一个模块，结构如下图<br><img src="https://github.com/joy_yu/CSPopKit/blob/master/README/屏幕快照%202018-04-04%20下午2.03.07.png" alt="Alt text"></p>
+<h4 id="背景："><a href="#背景：" class="headerlink" title="背景："></a>背景：</h4><p>多人维护的项目，针对产品需求需要定制各种弹窗，因为没有一套规范实现，每个人根据自己的代码习惯定制不同风格的弹窗，久而久之，项目内出现了各种各种的弹窗代码，有的是直接定制view，添加到superView上，有的是用controller定制，有的加window上，这些杂乱的代码分散在各处，无法清晰梳理出弹窗相关业务的逻辑，而且由于各种各种的弹窗增多，触发时机不同，有可能会出现界面上出现多个弹窗的case，这时候如果要做弹窗的优先级展示，因没有一个底层去维护这些弹窗逻辑，根本就无力做到弹窗的分级控制，基于这些，对项目中的弹窗进行了全部重构。</p>
+<h4 id="CSPopKit使用："><a href="#CSPopKit使用：" class="headerlink" title="CSPopKit使用："></a>CSPopKit使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//CSPopKit定义的弹窗三要素组件拼装</span><br><span class="line">CSCustomPopHighProprityHandler *handler = [CSCustomPopHighProprityHandler handler];</span><br><span class="line">CSCustomTestViewLoader *viewloader = [CSCustomTestViewLoader loader];</span><br><span class="line">CSCustomTestPopLoader *popLoader = [CSCustomTestPopLoader loader];</span><br><span class="line"></span><br><span class="line">//CSCustomPopManager底层方法调用</span><br><span class="line">[[CSCustomPopManager shareManager] showPopViewWithHandler:handler viewLoader:viewloader popControllerLoader:popLoader completeBlock:^(id data) &#123;</span><br><span class="line"></span><br><span class="line">&#125; fromViewController:nil];</span><br></pre></td></tr></table></figure>
+<p>你可以理解CSPopKit这套方案为：<br>CSCustomPopManager为一个厨子（工具类），通过不同的食材元素（弹窗元素）拼接，烹饪出各种不同的食品（弹窗）。</p>
+<h4 id="CSPopKit设计："><a href="#CSPopKit设计：" class="headerlink" title="CSPopKit设计："></a>CSPopKit设计：</h4><p><strong>设计历程</strong></p>
+<p>弹窗这类业务较轻，而且多重业务弹窗业务相近，而且同一个app内的弹窗风格相近，所以在设计时容易直接想到用一个manager去中心化管理弹窗，用一个统一的空间作为弹窗展示，同时视图在尽量重用的基础上根据业务的不同做各种区分判断。<br>这样暴露的问题是：</p>
+<ol>
+<li>弹窗业务变多之后，manager成了一个业务处理的中心爆炸类，包含各类弹窗业务展示条件判断，弹窗视图上元素点击业务处理，数据埋点处理等等，</li>
+<li>视图这层同样也因为被复用的太多，各种元素选择性的hidden，同一按钮事件根据业务区分不同的delegate回调出去；<br>整个业务线已经纠缠的傻傻分不清了。</li>
+</ol>
+<p>在此基础上可以再根据弹窗业务线将不同的弹窗业务划分到不同的manager当中，a类业务弹窗用aManager,b类弹窗用bManager,这样从业务职责上就区分出了不同业务，每个业务间相对独立，但这样同样面临以下问题:</p>
+<ol>
+<li>单例太多，浪费内存；</li>
+<li>弹窗manager各自独立，没有统一规则，无法做到优先级展示；</li>
+</ol>
+<p>回到该模块最初的需求，是希望每一个弹窗都能灵活的个性化内容配置，能定制各种弹出，消失动画，能单独处理自己的业务逻辑，基于这些，突然想到用组件的形式去拼接一个弹窗业务。<br>最终在项目中经过实践证明，用组件方式，解决了所有以上的痛点，并且该模块已经形成一个模板，对接触这类业务的新人，也能轻松接入新的弹窗业务。</p>
+<p><strong>使用介绍:</strong></p>
+<p>在CSPopKit中，弹窗的完整实现由以下三要素组成：</p>
+<ul>
+<li>CSCustomPopViewLoader</li>
+</ul>
+<p>每个弹窗都有独特定制的view,该view仅仅表达弹窗的内容元素，它与弹窗在什么位置，通过什么方法展示，消失都无关，CSCustomPopViewLoader就是负责装载这个内容view；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopViewLoader.m</span><br><span class="line"></span><br><span class="line">- (CSCustomPopView *)view</span><br><span class="line">&#123;</span><br><span class="line">    return [CSCustomPopView popView];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>CSCustomPopControllerLoader</li>
+</ul>
+<p>每个弹窗都有自己的展示，消失方式，渐变出现，消失，展示在屏幕的中间，这些都是可以个性化控制，CSCustomPopControllerLoader负责个性化展示；</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopControllerLoader.m</span><br><span class="line"></span><br><span class="line">- (void)setContent:(UIView *)content</span><br><span class="line">&#123;</span><br><span class="line">    CSPopController *popController = [[CSPopController alloc] initWithContent:content];</span><br><span class="line">    self.popController = popController;</span><br><span class="line"></span><br><span class="line">    //通过popTheme来定义不同的展示风格</span><br><span class="line">    CSPopTheme *theme = [CSPopTheme defaultTheme];</span><br><span class="line">    popController.theme = theme;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>CSCustomPopHandler</li>
+</ul>
+<p>每个弹窗都应该有自己的业务处理，弹窗是否需要展示，展示时机是什么，弹窗视图上的元素点击后如何响应，这些都交给CSCustomPopHandler处理。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">//CSCustomPopHandler.m</span><br><span class="line"></span><br><span class="line">- (void)dismissPopView:(CSCustomPopView *)popView</span><br><span class="line">&#123;</span><br><span class="line">    [[CSPopViewManager sharedManager] removePop:self];</span><br><span class="line">    [self.popController dismissPopControllerAnimated:YES];</span><br><span class="line">    self.reformer = nil;</span><br><span class="line">    self.popView = nil;</span><br><span class="line">    self.popController = nil;</span><br><span class="line">    self.completeBlock = nil;</span><br><span class="line">    self.fromViewController = nil;</span><br><span class="line">    //remove self from manager handlers array</span><br><span class="line">    if (self.delegate &amp;&amp; [self.delegate respondsToSelector:@selector(removeHandler:)])</span><br><span class="line">    &#123;</span><br><span class="line">       [self.delegate removeHandler:self];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定制不同的元素后，如何将这些元素装载再一起，展示在界面上形成一个弹窗呢，这就是CSCustomPopManager做的事情。<br>具体实现逻辑参照这一底层最核心方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- (void)showPopViewWithHandler:(id&lt;CSCustomPopHandlerProtocol,CSCustomPopViewProrocol,CSPopPriorityProtocol&gt;)popHandler</span><br><span class="line">                    viewLoader:(id&lt;CSCustomPopViewLoaderProtocol&gt;)popViewLoader</span><br><span class="line">                     popControllerLoader:(id&lt;CSCustomPopControllerLoaderProtocol,CSPopControllerProviderProtocol&gt;)popControllerLoader</span><br><span class="line">                    popReformer:(id&lt;CSCustomReformerProtocol&gt;)popReformer</span><br><span class="line">                 completeBlock:(void (^)(id))completeBlock</span><br><span class="line">            fromViewController:(UIViewController *)viewController;</span><br><span class="line">&#123;</span><br><span class="line">    NSLog(@&quot;will show popView&quot;);</span><br><span class="line">    </span><br><span class="line">    id&lt;CSCustomReformerProtocol&gt; reformer = nil;</span><br><span class="line">    CSCustomPopView *popView = nil;</span><br><span class="line">    id &lt;CSCustomPopControllerLoaderProtocol,CSPopControllerProviderProtocol&gt; popController = nil;</span><br><span class="line">    id&lt;CSCustomPopHandlerProtocol,CSCustomPopViewProrocol,CSPopPriorityProtocol&gt; handler = nil;</span><br><span class="line">   </span><br><span class="line">    //handler组件处理</span><br><span class="line">    if (popHandler == nil)</span><br><span class="line">    &#123;</span><br><span class="line">        handler = [CSCustomPopHandler handler];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        handler = popHandler;</span><br><span class="line">    &#125;</span><br><span class="line">    handler.delegate = self;</span><br><span class="line">    handler.completeBlock = completeBlock;</span><br><span class="line">    handler.fromViewController = viewController;</span><br><span class="line">    [self.handlers addObject:handler];</span><br><span class="line">    </span><br><span class="line">    //reformer组件处理</span><br><span class="line">    if (popReformer == nil)</span><br><span class="line">    &#123;</span><br><span class="line">        reformer = [CSCustomPopReformer reformer];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        reformer = popReformer;</span><br><span class="line">    &#125;</span><br><span class="line">    handler.reformer = reformer;</span><br><span class="line">    </span><br><span class="line">    //viewloader组件处理:reformer内部处理viewloader是否为空以及方法调用</span><br><span class="line">    if (reformer &amp;&amp; [reformer respondsToSelector:@selector(fetchPopViewWithData:viewLoader:)])</span><br><span class="line">    &#123;</span><br><span class="line">        popView = [reformer fetchPopViewWithData:handler.data viewLoader:popViewLoader];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;reformer not implemention fetchPopViewWithModel:viewLoader method&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    popView.delegate = handler;</span><br><span class="line">    handler.popView = popView;</span><br><span class="line">    </span><br><span class="line">    if (handler &amp;&amp; [handler respondsToSelector:@selector(willPresentPopView)])</span><br><span class="line">    &#123;</span><br><span class="line">        [handler willPresentPopView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;handler not implemention willPresentPopView menthod&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    BOOL cancel = [[CSPopViewManager sharedManager] addPop:handler];</span><br><span class="line">    if (cancel)</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;cancel pop for popView,priority:%ld&quot;,[handler priority]);</span><br><span class="line">        if (handler &amp;&amp; [handler respondsToSelector:@selector(cancelPresentPopView)])</span><br><span class="line">        &#123;</span><br><span class="line">            [handler cancelPresentPopView];</span><br><span class="line">        &#125;</span><br><span class="line">        else</span><br><span class="line">        &#123;</span><br><span class="line">            NSLog(@&quot;handler not implemention cancelPresentPopView menthod&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;popView did show,priority:%ld&quot;,[handler priority]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    //popController组件处理：reformer内部处理popController组件是否为空以及方法调用</span><br><span class="line">    if (reformer &amp;&amp; [reformer respondsToSelector:@selector(fetchPopControllerWithData:popControllerLoader:view:)])</span><br><span class="line">    &#123;</span><br><span class="line">        popController = [reformer fetchPopControllerWithData:handler.data popControllerLoader:popControllerLoader view:popView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;reformer not implemention fetchPopControllerWithData:popControllerLoader:view: method&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">   </span><br><span class="line">    </span><br><span class="line">    handler.popController = popController;</span><br><span class="line">  </span><br><span class="line">    [handler.popController presentPopControllerAnimated:YES];</span><br><span class="line">    if (handler &amp;&amp; [handler respondsToSelector:@selector(didPresentPopView)])</span><br><span class="line">    &#123;</span><br><span class="line">        [handler didPresentPopView];</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">    &#123;</span><br><span class="line">        NSLog(@&quot;handler not implemention didPresentPopView menthod&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;present popView type:%@,data:%@&quot;,NSStringFromClass([popView class]),handler.data);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h5 id="其他1："><a href="#其他1：" class="headerlink" title="其他1："></a>其他1：</h5><p>CSPopViewManager</p>
+<p>该弹窗方案提供一套弹窗优先级控制逻辑，每个弹窗业务都可以自定义自己的优先级priority，规定界面上只允许展示一个弹窗。当present一个弹窗a，首先判断当前是否有弹窗展示，没有则直接展示，若有弹窗b，比较弹窗a和弹窗b的优先级，如果a优先级高于b，dismiss当前展示的弹窗b，再present弹窗a，如果a优先级低，弹窗a取消这次present。这套优先级控制逻辑比较简单，如果你有更复杂的控制逻辑，可以在此基础上修改。<br>这套优先级控制通过该模块控制：</p>
+<p><img src="https://github.com/joy_yu/CSPopKit/blob/master/README/屏幕快照%202018-04-04%20下午11.44.53.png" alt="Alt text"></p>
+<h4 id="其他2"><a href="#其他2" class="headerlink" title="其他2:"></a>其他2:</h4><p>CSPopController</p>
+<p><img src="https://github.com/joy_yu/CSPopKit/blob/master/README/屏幕快照%202018-04-04%20下午11.39.12.png" alt="Alt text"></p>
+<p>CSPopController是一个独立的弹窗展示控件，可以单独使用，使用很简单:<br>内部就是通过外界传入的弹窗视图contentView进行包裹，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (instancetype)initWithContent:(UIView *)content;</span><br></pre></td></tr></table></figure></p>
+<p>在外界直接通过present,dissmiss方法来present，dismiss弹窗。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//present</span><br><span class="line">- (void)presentPopControllerAnimated:(BOOL)animated;</span><br><span class="line"></span><br><span class="line">//dismiss</span><br><span class="line">- (void)dismissPopControllerAnimated:(BOOL)animated;</span><br></pre></td></tr></table></figure>
+<p>唯一需要注意的是，传入的contentView需要遵循autolayout布局，而且需要添加底部约束，popController会在内部通过约束帮你做到高度自适应。</p>
+<p>popTheme的主题定制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (instancetype)defaultTheme</span><br><span class="line">&#123;</span><br><span class="line">    CSPopTheme *defaultTheme = [[CSPopTheme alloc] init];</span><br><span class="line">    </span><br><span class="line">//圆角，宽度，弹出，消失动画，动画时间，是否支持点击空白消除等等 </span><br><span class="line"></span><br><span class="line">defaultTheme.maskTypeTheme(CSPopThemeMaskTypeDimmed).cornerRadiusTheme(16.0f).maxPopupWidthTheme(280.0f).animationPresentionDurationTheme(0.6f).animationDismissDurationTheme(0.6f).shouldDismissOnBackgroundTouchTheme(NO).popThemePresentationStyleTheme(CSPPopThemePresentationStyleSlideInFromTopAndAngleBounce).popThemeDismissStyleTheme(CSPPopThemeDismissStyleSlideInToBottomAndAngle).horizontalOffsetTheme(0.f).verticalOffsetTheme(0.f);</span><br><span class="line">    return defaultTheme;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/CSPopKit - 一个弹窗实现方案/" data-id="cjk6wq6wt00029htxkp2yoos9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/29/CSReduxKit - 单向数据流方案/">CSReduxKit:单向数据流方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/Vue项目实战/">Vue项目实战:集vue webpack node.js es6 styles 线上部署等技术栈实战</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Joy<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
