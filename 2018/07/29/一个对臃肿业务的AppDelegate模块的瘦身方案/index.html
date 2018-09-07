@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>一个对臃肿业务的AppDelegate模块的瘦身方案 | hello,Joy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="CSAppDelegateModulehttps://github.com/dormitory219/CSAppDelegateModule.git 本方案从工程中抽离出来，目的是优化一个有着非常臃肿业务的AppDelegate。 笔者做这个瘦身优化，是基于一个有着4000行代码的AppDelegate。从代码量就可见这块业务有多臃肿，也暴露出巨大的代码质量问题，在业务开发中，AppDelegat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一个对臃肿业务的AppDelegate模块的瘦身方案">
+<meta property="og:url" content="https://github.com/dormitory219/2018/07/29/一个对臃肿业务的AppDelegate模块的瘦身方案/index.html">
+<meta property="og:site_name" content="hello,Joy">
+<meta property="og:description" content="CSAppDelegateModulehttps://github.com/dormitory219/CSAppDelegateModule.git 本方案从工程中抽离出来，目的是优化一个有着非常臃肿业务的AppDelegate。 笔者做这个瘦身优化，是基于一个有着4000行代码的AppDelegate。从代码量就可见这块业务有多臃肿，也暴露出巨大的代码质量问题，在业务开发中，AppDelegat">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-09-07T14:14:38.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一个对臃肿业务的AppDelegate模块的瘦身方案">
+<meta name="twitter:description" content="CSAppDelegateModulehttps://github.com/dormitory219/CSAppDelegateModule.git 本方案从工程中抽离出来，目的是优化一个有着非常臃肿业务的AppDelegate。 笔者做这个瘦身优化，是基于一个有着4000行代码的AppDelegate。从代码量就可见这块业务有多臃肿，也暴露出巨大的代码质量问题，在业务开发中，AppDelegat">
+  
+    <link rel="alternate" href="/atom.xml" title="hello,Joy" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">hello,Joy</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Walk steps step by step</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://github.com/dormitory219"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-一个对臃肿业务的AppDelegate模块的瘦身方案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/29/一个对臃肿业务的AppDelegate模块的瘦身方案/" class="article-date">
+  <time datetime="2018-07-29T12:54:00.000Z" itemprop="datePublished">2018-07-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      一个对臃肿业务的AppDelegate模块的瘦身方案
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="CSAppDelegateModule"><a href="#CSAppDelegateModule" class="headerlink" title="CSAppDelegateModule"></a>CSAppDelegateModule</h1><p><a href="https://github.com/dormitory219/CSAppDelegateModule.git">https://github.com/dormitory219/CSAppDelegateModule.git</a></p>
+<p>本方案从工程中抽离出来，目的是优化一个有着非常臃肿业务的AppDelegate。</p>
+<p>笔者做这个瘦身优化，是基于一个有着4000行代码的AppDelegate。从代码量就可见这块业务有多臃肿，也暴露出巨大的代码质量问题，在业务开发中，AppDelegate业务有以下问题：</p>
+<ol>
+<li>代码量巨大，难以理清逻辑；</li>
+<li>业务杂糅在一起，划分不明确；</li>
+<li>业务之间相互耦合严重，牵一发动全身</li>
+</ol>
+<p>因为笔者所在工程已经经历了近6年，由于人员更迭以及文档的缺失，一些业务逻辑快到无人能理清的阶段，而且随着业务的不断叠加，代码质量变坏的趋势越渐明显，针对这个，笔者对这块进行了比较大的重构工作。</p>
+<h3 id="1-重构的步骤如下："><a href="#1-重构的步骤如下：" class="headerlink" title="1. 重构的步骤如下："></a>1. 重构的步骤如下：</h3><ol>
+<li><p>category横切业务线:</p>
+<p>业务非常庞大的情况下，通过cateogry可以清晰的将杂糅的业务进行分层，而且业务上更结构清晰。这种做法最大的好处是可以将老代码逻辑经过变更后的逻辑缺失风险降到最低，相信这是每个重构优化工作者都怕遇到的问题，在合并一些逻辑时不知觉的就去掉了一些隐藏逻辑。</p>
+</li>
+<li><p>建立CSAppDelegateService业务线:<br>第一步已经将业务通过category切出来了不同的层次，就比如：</p>
+<p>appDelegate+A,</p>
+<p>appDelegate+B,</p>
+<p>appDelegate+C,</p>
+<p>appDelegate+D<br>……</p>
+<p>这一步就是将对应的category转化为相应的service，service是每个独立业务的承载体，之后新增的业务都会以service形式存在。</p>
+<p>CSAppDelegateAService</p>
+<p>CSAppDelegateBService</p>
+<p>CSAppDelegateCService</p>
+</li>
+</ol>
+<ol start="3">
+<li><p>CSAppDelegateServiceManager接管appDelegate业务，管理各类service调用:</p>
+<p>将appDelegate内所有系统事件，全部转接出去，交给一个单独的类CSAppDelegateServiceManager去handler,这样的话，appDelegate将会变得很纯粹，重活累活都交给CSAppDelegateServiceManager了</p>
+</li>
+</ol>
+<ol start="4">
+<li><p>CSAppDelegateServiceManager内注册service，分发action到相应的service处理:</p>
+<p>CSAppDelegateServiceManager接管appDelegate所有事件后，由他来分发到对应的service来处理，因为同一个事件，比如</p>
+<ul>
+<li>(BOOL)application:(UIApplication <em>) application didFinishLaunchingWithOptions:(NSDictionary </em>) launchOptions</li>
+</ul>
+<p>该事件会分发到多个service中进行处理，每个service之间的顺序如何，会在这里做优先级处理。</p>
+</li>
+</ol>
+<ol start="4">
+<li><p>CSMediator (Service,Router)作为内部service之间调用，外部业务对appDelegate相关业务调用的解耦:</p>
+<p>上面的appDelegate事件到达对应的service之后，在service内部会处理相关逻辑，但是service之间可能会有依赖，serviceA可能会调用serviceB的业务，这样在多个service之间会有业务耦合，我们希望解除这种耦合，目前通过CSMediator来完成这件事。CSMediator是笔者之前针对初步组件化封装的解耦方案，目前这里是通过protocol的方式来就解除业务之间的耦合。</p>
+</li>
+</ol>
+<ol start="5">
+<li><p>具体单个service的优化:</p>
+<p>很多人将重构会肤浅的理解为将一块代码分离出来放在另一块，删删减减，这种我不认同。好的重构是一种代码编写思路的转变，是对一种编写方式的协同。回归正题，重构到这个阶段，则是对根深蒂固的老逻辑进行分析，分散但有共性的业务进行整合，杂糅的粗业务戏分。</p>
+</li>
+</ol>
+<ol start="6">
+<li><p>建立该模块内相应技术文档，以及编程注意事项。</p>
+<p>对代码进行相关注释，画相关类图，流程图，约定一些编程规范，对组内其他人进行技术分享。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://github.com/dormitory219/2018/07/29/一个对臃肿业务的AppDelegate模块的瘦身方案/" data-id="cjls31k310003gntxguue9u0r" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          CSPopKit:一个弹窗实现方案
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/29/Web前后端项目部署阿里云服务器/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">前后端项目部署阿里云服务器</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/29/Vue项目实战/">Vue项目实战:集vue webpack node.js es6 styles 线上部署等技术栈实战</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/CSReduxKit - 单向数据流方案/">CSReduxKit:单向数据流方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/CSPopKit - 一个弹窗实现方案/">CSPopKit:一个弹窗实现方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/一个对臃肿业务的AppDelegate模块的瘦身方案/">一个对臃肿业务的AppDelegate模块的瘦身方案</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/29/Web前后端项目部署阿里云服务器/">前后端项目部署阿里云服务器</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 Joy<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
